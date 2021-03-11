@@ -26,7 +26,19 @@ type State = {
     bots: Pos[]
 }
 function tick({ origin, bots }: State): State {
-    return { origin, bots: bots.concat([{ ...origin }]).map(wander) }
+    const newLocations = bots
+        .concat({ ...origin }) // spawn new bot
+        .map(wander) // move 'em all
+        .reduce((agg, bot) => { // group by position
+            const pos = `${bot.x},${bot.y}`,
+                prevValue = agg.get(pos) ?? [];
+            agg.set(pos, prevValue.concat([bot]));
+            return agg;
+        }, new Map<string, Pos[]>()),
+        newBots = [...newLocations.values()]
+            .flatMap(arr => arr.length === 1 ? arr : []) // bots that collide die
+
+    return { origin, bots: newBots }
 }
 function draw(sketch: p5, { bots }: State): void {
     bots.forEach(({ x, y }) => {
