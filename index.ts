@@ -1,3 +1,3 @@
-import hello from "./src/hello";
+import start from "./src";
 
-hello();
+start();
