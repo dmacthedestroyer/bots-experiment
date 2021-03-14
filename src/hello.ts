@@ -4,34 +4,41 @@ export default () =>
     new p5((sketch: p5) => {
         const canvasWidth = 1000,
             canvasHeight = 1000,
-            emitter: Emitter = {
+            emitters: Emitter[] = [{
                 origin: {
-                    x: Math.random() * canvasWidth,
-                    y: Math.random() * canvasHeight,
+                    x: 800,
+                    y: 500
                 },
                 buildIndex: 0,
                 buildLoop: [
-                    prefabBots.mover("up", "left"),
-                    prefabBots.mover("down", "right"),
-                    prefabBots.mover("up", "right"),
-                    prefabBots.mover("down", "left"),
-                    prefabBots.mover("down", "left", "right"),
-                    prefabBots.mover("up", "left", "right"),
-                    prefabBots.mover("right", "down", "up"),
-                    prefabBots.mover("left", "up", "down"),
-                    // prefabBots.wanderer
+                    prefabBots.wanderer,
+                    prefabBots.mover("N", "S", "E", "W", "W", "W")
                 ],
-            };
+            },
+            {
+                origin: {
+                    x: 200,
+                    y: 500
+                },
+                buildIndex: 0,
+                buildLoop: [
+                    prefabBots.wanderer,
+                    prefabBots.mover("N", "S", "E", "W", "E", "E")
+                ],
+            },
+
+            ];
 
         sketch.setup = () => {
             sketch.createCanvas(canvasWidth, canvasHeight);
         };
 
-        let state: State = { emitters: [emitter], bots: [] };
+        let state: State = { emitters: emitters, bots: [] };
 
         sketch.draw = () => {
             sketch.background(51);
             state = tick(state);
+            console.log(`population: ${state.bots.length}`)
             draw(sketch, state);
         };
     });
@@ -80,47 +87,50 @@ function emit(emitter: Emitter): [Emitter, Bot] {
 
 const prefabBots = {
     wanderer(pos: Pos): Bot {
-        return prefabBots.mover("down", "left", "right", "up")(pos);
+        return prefabBots.mover("S", "W", "E", "N")(pos);
     },
-    mover(...directions: Array<"up" | "down" | "right" | "left">): BotBuilder {
+    mover(...directions: CardinalDirection[]): BotBuilder {
         return (pos: Pos) => ({
             ...pos,
-            core: directions.reduce((o, k) => ({ ...o, [k]: "MOVE" }), {}),
+            parts: directions.map(newMove)
         });
     },
 };
 type Bot = Pos & {
-    core: {
-        up?: BotPart;
-        down?: BotPart;
-        right?: BotPart;
-        left?: BotPart;
-    };
+    parts: BotPart[];
 };
-type BotPart = "MOVE";
-function step(bot: Bot): Bot {
-    const {
-        core: { up: top, down: bottom, right, left },
-    } = bot;
-    const parts = [];
-    if (top !== undefined) {
-        parts.push({ x: 0, y: -1 });
-    }
-    if (bottom !== undefined) {
-        parts.push({ x: 0, y: 1 });
-    }
-    if (right !== undefined) {
-        parts.push({ x: 1, y: 0 });
-    }
-    if (left !== undefined) {
-        parts.push({ x: -1, y: 0 });
+type CardinalDirection = "N" | "S" | "E" | "W";
+type Move = { type: "MOVE", direction: CardinalDirection };
+type BotPart = Move;
+function newMove(direction: CardinalDirection): Move {
+    return { type: "MOVE", direction }
+}
+function activateMove(bot: Bot, move: Move): Bot {
+    function apply(x: number, y: number) {
+        return { ...bot, ...translate(bot, { x, y }) }
     }
 
-    if (parts.length === 0) {
-        return bot;
+    switch (move.direction) {
+        case "N":
+            return apply(0, -1);
+        case "S":
+            return apply(0, 1);
+        case "E":
+            return apply(1, 0);
+        case "W":
+            return apply(-1, 0)
     }
-    const delta = parts[Math.floor(Math.random() * parts.length)];
-    return { ...bot, ...translate(bot, delta) };
+}
+function activatePart(bot: Bot, part: BotPart) {
+    switch (part.type) {
+        case "MOVE":
+            return activateMove(bot, part)
+    }
+}
+function step(bot: Bot): Bot {
+    const { parts } = bot,
+        part = parts[Math.floor(Math.random() * parts.length)];
+    return activatePart(bot, part);
 }
 
 type Pos = { x: number; y: number };
