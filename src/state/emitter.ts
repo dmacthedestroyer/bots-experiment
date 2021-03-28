@@ -1,5 +1,5 @@
 import { Bot } from "./bot";
-import { Pos } from "./util";
+import { Pos } from "../util";
 
 export type Emitter = {
   origin: Pos;

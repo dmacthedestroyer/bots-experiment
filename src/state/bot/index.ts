@@ -1,4 +1,4 @@
-import { Pos, translate } from "../util";
+import { Pos, translate } from "../../util";
 import { BotPart } from "./parts";
 
 export type Bot = Pos & {

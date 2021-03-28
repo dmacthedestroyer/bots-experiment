@@ -1,4 +1,4 @@
-import { Pos } from "../util";
+import { Pos } from "../../util";
 
 export type Move = {
   type: "MOVE";

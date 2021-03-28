@@ -1,6 +1,6 @@
 import { Bot, step } from "./bot";
 import { Emitter, emit } from "./emitter";
-import { unzip } from "./util";
+import { unzip } from "../util";
 
 export type State = {
   emitters: Emitter[];
