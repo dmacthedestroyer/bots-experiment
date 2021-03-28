@@ -89,5 +89,5 @@ function prefabBot(...parts: Array<PrefabBotPart>): BotBuilder {
     }
   });
 
-  return (pos: Pos) => ({ ...pos, parts: botParts });
+  return (pos: Pos) => ({ pos, parts: botParts });
 }

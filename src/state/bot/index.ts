@@ -1,7 +1,8 @@
 import { Pos, translate } from "../../util";
 import { BotPart } from "./parts";
 
-export type Bot = Pos & {
+export type Bot = {
+  pos: Pos;
   parts: BotPart[];
 };
 
@@ -9,7 +10,7 @@ function activatePart(bot: Bot, part: BotPart): Bot {
   switch (part.type) {
     case "MOVE":
       function move(x: number, y: number): Bot {
-        return { ...bot, ...translate(bot, { x, y }) };
+        return { ...bot, ...translate(bot.pos, { x, y }) };
       }
       switch (part.direction) {
         case "N":

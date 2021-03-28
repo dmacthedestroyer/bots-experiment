@@ -14,7 +14,7 @@ export function tick({ emitters, bots }: State): State {
       .map(step)
       .reduce((agg, bot) => {
         // group by position
-        const pos = `${bot.x},${bot.y}`,
+        const pos = `${bot.pos.x},${bot.pos.y}`,
           prevValue = agg.get(pos) ?? [];
         agg.set(pos, prevValue.concat([bot]));
         return agg;
