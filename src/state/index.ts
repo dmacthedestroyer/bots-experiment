@@ -1,6 +1,6 @@
 import { Bot, botStateData, step as botStep } from "./bot";
 import { Emitter, emit } from "./emitter";
-import { unzip } from "../util/array";
+import { isDefined, unzip } from "../util/array";
 
 export type State = {
   emitters: Emitter[];
@@ -16,7 +16,7 @@ export function step(state: State): State {
   const [newEmitters, newBots] = unzip(state.emitters.map(emit));
   const stateData = botStateData(state);
   const newLocations = state.bots
-      .concat(newBots)
+      .concat(newBots.filter(isDefined))
       .map((bot) => botStep(bot, stateData))
       .reduce((agg, bot) => {
         // group by position

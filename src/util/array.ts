@@ -12,3 +12,7 @@ export function randomElement<T>(arr: Array<T>): T | undefined {
   if (arr.length === 0) return undefined;
   return arr[Math.floor(Math.random() * arr.length)];
 }
+
+export function isDefined<T>(t: T | undefined): t is T {
+  return t !== undefined;
+}

@@ -6,8 +6,8 @@ export type Emitter = {
   buildLoop: BotBuilder[];
   buildIndex: number;
 };
-export type BotBuilder = (pos: Pos) => Bot;
-export function emit(emitter: Emitter): [Emitter, Bot] {
+export type BotBuilder = (pos: Pos) => Bot | undefined;
+export function emit(emitter: Emitter): [Emitter, Bot | undefined] {
   const buildIndex = (emitter.buildIndex + 1) % emitter.buildLoop.length,
     newBot = emitter.buildLoop[buildIndex](emitter.origin);
   return [{ ...emitter, buildIndex }, newBot];

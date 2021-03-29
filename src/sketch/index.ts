@@ -3,6 +3,7 @@ import { State } from "../state";
 import { translate } from "../util/pos";
 
 export function drawState(sketch: p5, { bots }: State): void {
+  sketch.scale(1.5);
   bots.forEach((bot) => {
     bot.parts.forEach((part) => {
       switch (part.type) {

@@ -6,6 +6,7 @@ import { Pos, translate } from "./util/pos";
 import { drawState } from "./sketch";
 import { BotLogic } from "./state/bot/logic";
 import { Bot } from "./state/bot";
+import { isDefined } from "./util/array";
 
 export default () =>
   new p5((sketch: p5) => {
@@ -32,14 +33,13 @@ function initializeState(width: number, height: number): State {
     emitters: [
       {
         origin: {
-          x: width / 4,
+          x: width / 3,
           y: height / 2,
         },
         buildIndex: 0,
-        buildLoop: [
-          prefabBot("N", "N", "E", "E", "W"),
-          // avoidanceBot(2, "N", "S", "E", "W", "N", "E"),
-        ],
+        buildLoop: [prefabBot("N", "N", "E", "E", "W")].concat(
+          range(30).map((i) => noop)
+        ),
       },
       {
         origin: {
@@ -67,7 +67,8 @@ function initializeState(width: number, height: number): State {
             ].map(([x, y]) => avoidanceBot(2, "N", "S", "E", "W")({ x, y }))
           )
       )
-      .concat(range(100).map((x) => prefabBot()({ x: x + 210, y: 100 }))),
+      .concat(range(100).map((x) => prefabBot()({ x: x + 210, y: 100 })))
+      .filter(isDefined),
   };
 }
 
@@ -105,6 +106,7 @@ type PrefabLogicPart = [Sensor, (part: BotPart) => boolean];
 function pos(...positions: Array<[number, number]>): Array<Pos> {
   return positions.map(([x, y]) => ({ x, y }));
 }
+const noop: BotBuilder = (pos) => undefined;
 function prefabBot(...prefabParts: Array<PrefabBotPart>): BotBuilder {
   function move(direction: Move["direction"]): BotPart {
     return { type: "MOVE", direction };
