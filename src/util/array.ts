@@ -1,9 +1,3 @@
-export type Pos = { x: number; y: number };
-
-export function translate(pos: Pos, delta: Pos) {
-  return { x: pos.x + delta.x, y: pos.y + delta.y };
-}
-
 export function unzip<T1, T2>(ts: Array<[T1, T2]>): [Array<T1>, Array<T2>] {
   const t1s: T1[] = [],
     t2s: T2[] = [];
@@ -12,4 +6,9 @@ export function unzip<T1, T2>(ts: Array<[T1, T2]>): [Array<T1>, Array<T2>] {
     t2s.push(t2);
   });
   return [t1s, t2s];
+}
+
+export function randomElement<T>(arr: Array<T>): T | undefined {
+  if (arr.length === 0) return undefined;
+  return arr[Math.floor(Math.random() * arr.length)];
 }
