@@ -1,6 +1,7 @@
 import { State } from "..";
 import { randomElement } from "../../util/array";
 import { Pos, posKey, translate } from "../../util/pos";
+import { Action } from "../action";
 import { BotLogic } from "./logic";
 import { BotPart } from "./parts";
 
@@ -12,28 +13,24 @@ export type Bot = {
 
 /**
  * Executes the specified part against the specified bot.
- * @param bot The bot that the executed part should apply to
  * @param part The part which should be executed
  * @returns The modified bot, after having the execution applied
  */
-function executePart(bot: Bot, part: BotPart): Bot {
+function chooseAction(part: BotPart): Action {
   switch (part.type) {
     case "MOVE":
-      function move(dx: number, dy: number): Bot {
-        return { ...bot, pos: translate(bot.pos, { x: dx, y: dy }) };
-      }
       switch (part.direction) {
         case "N":
-          return move(0, -1);
+          return Action.move(0, -1);
         case "S":
-          return move(0, 1);
+          return Action.move(0, 1);
         case "E":
-          return move(1, 0);
+          return Action.move(1, 0);
         case "W":
-          return move(-1, 0);
+          return Action.move(-1, 0);
       }
     case "SENSOR":
-      return bot; // TODO: something to do with sensors?
+      return Action.noop; // TODO: something to do with sensors?
   }
 }
 
@@ -52,7 +49,7 @@ export function botStateData(state: State): BotStateData {
   };
 }
 
-export function step(bot: Bot, stateData: BotStateData): Bot {
+export function step(bot: Bot, stateData: BotStateData): Action {
   // 1. activate parts based on environment
   const sensoryActivatedParts = bot.parts.filter((part) =>
     isPartActivatedByEnvironment(part, bot, stateData.botPositions)
@@ -73,8 +70,8 @@ export function step(bot: Bot, stateData: BotStateData): Bot {
   );
 
   const part = randomElement(executableParts);
-  if (part === undefined) return bot;
-  return executePart(bot, part);
+  if (part === undefined) return Action.noop;
+  return chooseAction(part);
 }
 
 function isPartActivatedByEnvironment(
