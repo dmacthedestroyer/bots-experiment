@@ -1,4 +1,4 @@
-import { Bot, botStateData, step as botStep } from "./bot";
+import { Bot, botStateData, chooseAction as botStep } from "./bot";
 import { Emitter, emit } from "./emitter";
 import { isDefined, unzip } from "../util/array";
 import { Action } from "./action";
@@ -7,6 +7,11 @@ import { translate } from "../util/pos";
 export type State = {
   emitters: Emitter[];
   bots: Bot[];
+};
+export const State = {
+  state(partial: Partial<State>): State {
+    return { emitters: [], bots: [], ...partial };
+  },
 };
 
 /**

@@ -108,29 +108,24 @@ function pos(...positions: Array<[number, number]>): Array<Pos> {
 }
 const noop: BotBuilder = (pos) => undefined;
 function prefabBot(...prefabParts: Array<PrefabBotPart>): BotBuilder {
-  function move(direction: Move["direction"]): BotPart {
-    return { type: "MOVE", direction };
-  }
   function sensor(
-    direction: "N" | "S" | "E" | "W",
+    direction: Move["direction"],
     behavior: "PURSUE" | "EVADE" = "EVADE"
   ): PrefabLogicPart {
-    const sensor: Sensor = {
-      type: "SENSOR",
-      zone:
-        direction === "N"
-          ? pos([0, -1], [0, -2]) //pos([0, -1], [-1, -2], [0, -2], [1, -2])
-          : direction === "S"
-          ? pos([0, 1], [0, 2]) //pos([0, 1], [-1, 2], [0, 2], [1, 2])
-          : direction === "E"
-          ? pos([1, 0], [2, 0]) //pos([1, 0], [2, -1], [2, 0], [2, 1])
-          : pos([-1, 0], [-2, 0]), //pos([-1, 0], [-2, -1], [-2, 0], [-2, 1]),
-    };
+    const sensor: Sensor = BotPart.sensor(
+      direction === "N"
+        ? pos([0, -1], [0, -2]) //pos([0, -1], [-1, -2], [0, -2], [1, -2])
+        : direction === "S"
+        ? pos([0, 1], [0, 2]) //pos([0, 1], [-1, 2], [0, 2], [1, 2])
+        : direction === "E"
+        ? pos([1, 0], [2, 0]) //pos([1, 0], [2, -1], [2, 0], [2, 1])
+        : pos([-1, 0], [-2, 0]) //pos([-1, 0], [-2, -1], [-2, 0], [-2, 1]),
+    );
 
     return [
       sensor,
       (part: BotPart) =>
-        part.type === "MOVE" &&
+        part._tag === "MOVE" &&
         (behavior === "PURSUE"
           ? part.direction !== direction
           : part.direction === direction),
@@ -145,7 +140,7 @@ function prefabBot(...prefabParts: Array<PrefabBotPart>): BotBuilder {
       case "S":
       case "E":
       case "W":
-        parts.push(move(prefab));
+        parts.push(BotPart.move(prefab));
         break;
       case "SN":
         logicBuilders.push(sensor("N"));
@@ -182,16 +177,16 @@ function avoidanceBot(
 ): BotBuilder {
   return (botPosition: Pos) => {
     const moveParts: Record<Move["direction"], Move> = {
-        N: { type: "MOVE", direction: "N" },
-        S: { type: "MOVE", direction: "S" },
-        E: { type: "MOVE", direction: "E" },
-        W: { type: "MOVE", direction: "W" },
+        N: BotPart.move("N"),
+        S: BotPart.move("S"),
+        E: BotPart.move("E"),
+        W: BotPart.move("W"),
       },
       [sensors, logic] = sensorAndLogicParts(
         [moveParts["N"], moveParts["S"], moveParts["E"], moveParts["W"]],
         depth
       );
-    return {
+    return Bot.bot({
       pos: botPosition,
       parts: moves
         .map(function (dir: Move["direction"]): BotPart {
@@ -199,7 +194,7 @@ function avoidanceBot(
         })
         .concat(sensors),
       logic,
-    };
+    });
   };
 }
 function sensorAndLogicParts(
@@ -209,10 +204,9 @@ function sensorAndLogicParts(
   const [mn, ms, me, mw] = nsew;
   const [u, d, l, r] = pos([0, -1], [0, 1], [-1, 0], [1, 0]);
   function sensor(...zone: Array<Pos | Pos[]>): Sensor {
-    return {
-      type: "SENSOR",
-      zone: zone.map((z) => (Array.isArray(z) ? translate(...z) : z)),
-    };
+    return BotPart.sensor(
+      zone.map((z) => (Array.isArray(z) ? translate(...z) : z))
+    );
   }
   const depths = [
       [
@@ -297,7 +291,7 @@ function sensorAndLogicParts(
 }
 function fullSensor(pos: Pos): Bot {
   function move(direction: Move["direction"]): Move {
-    return { type: "MOVE", direction };
+    return BotPart.move(direction);
   }
   const [mn, ms, me, mw] = [move("N"), move("S"), move("E"), move("W")],
     [sensors, logic] = sensorAndLogicParts([mn, ms, me, mw]),

@@ -1,11 +1,11 @@
 import { Pos } from "../../util/pos";
 
 export type Move = {
-  type: "MOVE";
+  _tag: "MOVE";
   direction: "N" | "S" | "E" | "W";
 };
 export type Sensor = {
-  type: "SENSOR";
+  _tag: "SENSOR";
   /**
    * List of coordinates relative to this bot's position that the sensor can detect. The bot is considered at position (0, 0).
    */
@@ -13,3 +13,12 @@ export type Sensor = {
 };
 
 export type BotPart = Move | Sensor;
+
+export const BotPart = {
+  move(direction: Move["direction"]): Move {
+    return { _tag: "MOVE", direction };
+  },
+  sensor(zone: Pos[]): Sensor {
+    return { _tag: "SENSOR", zone };
+  },
+};

@@ -6,7 +6,7 @@ export function drawState(sketch: p5, { bots }: State): void {
   sketch.scale(1.5);
   bots.forEach((bot) => {
     bot.parts.forEach((part) => {
-      switch (part.type) {
+      switch (part._tag) {
         case "SENSOR":
           sketch.noFill();
           sketch.stroke(255, 255, 255, 10);
