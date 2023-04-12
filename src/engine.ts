@@ -9,7 +9,8 @@ function translate(position: Position, ...deltas: Position[]): Position {
   );
 }
 
-export type CardinalDirection = "N" | "S" | "E" | "W";
+export const cardinalDirections = ["N", "S", "E", "W"] as const;
+export type CardinalDirection = typeof cardinalDirections[number];
 /**
  * Return a direction vector orienting the given cardinal direction
  */
@@ -28,10 +29,16 @@ export function delta(
   }
 }
 
-export type Action = {
-  _tag: "move";
-  direction: CardinalDirection;
-};
+export type Action =
+  | {
+      _tag: "move";
+      direction: CardinalDirection;
+    }
+  | {
+      _tag: "build";
+      bot: Bot;
+      direction: CardinalDirection;
+    };
 
 export type Bot = {
   action: () => Action;
@@ -40,14 +47,24 @@ export type BotState = { position: Position; bot: Bot };
 export type State = { bots: BotState[] };
 export function step(state: State): State {
   return {
-    bots: state.bots.map(({ position, bot }) => {
+    bots: state.bots.flatMap(({ position, bot }) => {
       const action = bot.action();
       switch (action._tag) {
         case "move":
-          return {
-            position: translate(position, delta(action.direction)),
-            bot,
-          };
+          return [
+            {
+              position: translate(position, delta(action.direction)),
+              bot,
+            },
+          ];
+        case "build":
+          return [
+            { position, bot },
+            {
+              position: translate(position, delta(action.direction)),
+              bot: action.bot,
+            },
+          ];
       }
     }),
   };
