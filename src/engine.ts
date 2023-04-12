@@ -1,15 +1,54 @@
-export type Action = "moveup";
+export type Position = { x: number; y: number };
+/**
+ * Apply the given deltas to the position
+ */
+function translate(position: Position, ...deltas: Position[]): Position {
+  return deltas.reduce(
+    ({ x, y }, { x: dx, y: dy }) => ({ x: x + dx, y: y + dy }),
+    position
+  );
+}
+
+export type CardinalDirection = "N" | "S" | "E" | "W";
+/**
+ * Return a direction vector orienting the given cardinal direction
+ */
+export function delta(
+  direction: CardinalDirection
+): { x: -1 | 0 | 1; y: -1 | 0 | 1 } {
+  switch (direction) {
+    case "N":
+      return { x: 0, y: -1 };
+    case "S":
+      return { x: 0, y: 1 };
+    case "E":
+      return { x: 1, y: 0 };
+    case "W":
+      return { x: -1, y: 0 };
+  }
+}
+
+export type Action = {
+  _tag: "move";
+  direction: CardinalDirection;
+};
+
 export type Bot = {
   action: () => Action;
 };
-export type Position = { x: number; y: number };
 export type BotState = { position: Position; bot: Bot };
 export type State = { bots: BotState[] };
 export function step(state: State): State {
   return {
-    bots: state.bots.map(({ position, bot }) => ({
-      position: { x: position.x, y: position.y - 1 },
-      bot,
-    })),
+    bots: state.bots.map(({ position, bot }) => {
+      const action = bot.action();
+      switch (action._tag) {
+        case "move":
+          return {
+            position: translate(position, delta(action.direction)),
+            bot,
+          };
+      }
+    }),
   };
 }

@@ -1,6 +1,6 @@
 import p5 from "p5";
 import { drawState } from "./sketch";
-import { State, step } from "./engine";
+import { CardinalDirection, State, step } from "./engine";
 
 export default () =>
   new p5((sketch: p5) => {
@@ -27,8 +27,16 @@ function initializeState(width: number, height: number): State {
     bots: [
       {
         position: { x: width / 2, y: height },
-        bot: { action: () => "moveup" },
+        bot: { action: () => ({ _tag: "move", direction: "N" }) },
+      },
+      {
+        position: { x: width / 2, y: height / 2 },
+        bot: { action: () => ({ _tag: "move", direction: chooseDirection() }) },
       },
     ],
   };
+}
+function chooseDirection(): CardinalDirection {
+  const directions = ["N", "S", "E", "W"] as const;
+  return directions[Math.floor(Math.random() * directions.length)];
 }
